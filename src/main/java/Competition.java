@@ -49,12 +49,13 @@ public class Competition {
 
             }
 
-
+            System.out.println("Reading was ended");
         }
     }
     public class FirstToSecond implements Runnable{
         public void run() {
             while (first.isAlive()||!firstQueue.isEmpty()) {
+                System.out.println(first.isAlive());
                 try {
                     secondQueue.add(firstQueue.remove());
                     Thread.sleep(2);
@@ -64,12 +65,15 @@ public class Competition {
                     e.printStackTrace();
                 }
             }
+
         }
     }
     public class SecondToThird implements Runnable{
         public void run() {
             while (second.isAlive()||!secondQueue.isEmpty()) {
+               // System.out.println(second.isAlive());
                 try {
+                    //System.out.println(firstQueue.element());
                     result.add(secondQueue.remove());
                     Thread.sleep(6);
                 } catch (NoSuchElementException e) {
