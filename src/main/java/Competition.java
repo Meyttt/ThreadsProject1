@@ -10,12 +10,12 @@ import java.util.*;
  * Created by master on 10.11.2016.
  */
 public class Competition {
-    Queue<String> firstQueue;
-    Queue<String> secondQueue;
-    Thread first;
-    Thread second;
-    Thread third;
-    ArrayList<String> result;
+    private Queue<String> firstQueue;
+    private Queue<String> secondQueue;
+    private Thread first;
+    private Thread second;
+    private Thread third;
+    private ArrayList<String> result;
     Competition() throws FileNotFoundException{
         firstQueue= EvictingQueue.create(5);
         secondQueue= EvictingQueue.create(5);
@@ -24,12 +24,10 @@ public class Competition {
         third = new Thread(new SecondToThird());
         result = new ArrayList<String>();
 
-
-
-
     }
-
-    WritingFromFile writingFromFile;
+    public WritingFromFile getWriting() throws FileNotFoundException {
+        return new WritingFromFile();
+    }
     public class WritingFromFile implements Runnable{
     BufferedReader bufferedReader = new BufferedReader(new FileReader("bop.txt"));
         public WritingFromFile() throws FileNotFoundException {
@@ -52,10 +50,19 @@ public class Competition {
             System.out.println("Reading was ended");
         }
     }
+    public FirstToSecond getF2S(){
+        return new FirstToSecond();
+    }
     public class FirstToSecond implements Runnable{
         public void run() {
-            while (first.isAlive()||!firstQueue.isEmpty()) {
-                System.out.println(first.isAlive());
+//                System.out.println(first.isAlive());
+//                System.out.println(firstQueue.isEmpty());
+//                System.out.println();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 try {
                     secondQueue.add(firstQueue.remove());
                     Thread.sleep(2);
@@ -64,14 +71,15 @@ public class Competition {
 
                     e.printStackTrace();
                 }
-            }
 
         }
     }
+    public SecondToThird getS2T(){
+        return new SecondToThird();
+    }
     public class SecondToThird implements Runnable{
         public void run() {
-            while (second.isAlive()||!secondQueue.isEmpty()) {
-               // System.out.println(second.isAlive());
+//            while (second.isAlive()||!secondQueue.isEmpty()) {
                 try {
                     //System.out.println(firstQueue.element());
                     result.add(secondQueue.remove());
@@ -81,19 +89,28 @@ public class Competition {
 
                     e.printStackTrace();
                 }
-            }
+//            }
         }
     }
-
+    public boolean firstEmpty(){
+        return firstQueue.isEmpty();
+    }
+    public boolean secondEmpty(){
+        return secondQueue.isEmpty();
+    }
 
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         HashMap<Integer, Integer> statistics = new HashMap<Integer, Integer>();
         for(int i=0; i<100;i++) {
             Competition competition = new Competition();
             synchronized (competition) {
-                competition.first.start();
-                competition.second.start();
-                competition.third.start();
+                Thread thread1 = new Thread(competition.getWriting());
+                Thread thread2 = new Thread(competition.getF2S());
+                Thread thread3 = new Thread(competition.getS2T());
+                thread3.start();
+                thread2.start();
+                thread1.start();
+
             }
             competition.first.join();
             competition.second.join();
