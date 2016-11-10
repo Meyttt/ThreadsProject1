@@ -58,19 +58,27 @@ public class Competition {
 //                System.out.println(first.isAlive());
 //                System.out.println(firstQueue.isEmpty());
 //                System.out.println();
-                try {
+            Thread thread1 = null;
+            try {
+                thread1=new Thread(getWriting());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            thread1.start();
+            while(thread1.isAlive())
+            try {
                     Thread.sleep(10);
-                } catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                     e.printStackTrace();
-                }
-                try {
-                    secondQueue.add(firstQueue.remove());
-                    Thread.sleep(2);
-                } catch (NoSuchElementException e) {
-                } catch (InterruptedException e) {
+            }
+            try {
+              secondQueue.add(firstQueue.remove());
+                Thread.sleep(2);
+            } catch (NoSuchElementException e) {
+            } catch (InterruptedException e) {
+                    e.printStackTrace();
+            }
 
-                    e.printStackTrace();
-                }
 
         }
     }
@@ -79,9 +87,11 @@ public class Competition {
     }
     public class SecondToThird implements Runnable{
         public void run() {
-//            while (second.isAlive()||!secondQueue.isEmpty()) {
+//
+            Thread thread2= new Thread(getF2S());
+            thread2.start();
+            while(thread2.isAlive()) {
                 try {
-                    //System.out.println(firstQueue.element());
                     result.add(secondQueue.remove());
                     Thread.sleep(6);
                 } catch (NoSuchElementException e) {
@@ -90,6 +100,7 @@ public class Competition {
                     e.printStackTrace();
                 }
 //            }
+            }
         }
     }
     public boolean firstEmpty(){
