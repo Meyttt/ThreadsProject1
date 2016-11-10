@@ -14,12 +14,16 @@ public class Competition {
     Queue<String> secondQueue;
     Thread first;
     Thread second;
+    Thread third;
     ArrayList<String> result;
     Competition() throws FileNotFoundException{
         firstQueue= EvictingQueue.create(5);
         secondQueue= EvictingQueue.create(5);
         first = new Thread(new WritingFromFile());
         second = new Thread(new FirstToSecond());
+        third = new Thread(new SecondToThird());
+        result = new ArrayList<String>();
+
 
 
 
@@ -34,16 +38,15 @@ public class Competition {
             while (true){
                 try {
                     firstQueue.add(bufferedReader.readLine());
+                    Thread.sleep(5);
                 }catch (NullPointerException e){
                     break;
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(5);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
             }
 
 
@@ -54,7 +57,7 @@ public class Competition {
             while (first.isAlive()||!firstQueue.isEmpty()) {
                 try {
                     secondQueue.add(firstQueue.remove());
-                    Thread.sleep(6);
+                    Thread.sleep(2);
                 } catch (NoSuchElementException e) {
                 } catch (InterruptedException e) {
 
@@ -65,9 +68,9 @@ public class Competition {
     }
     public class SecondToThird implements Runnable{
         public void run() {
-            while (first.isAlive()||!firstQueue.isEmpty()) {
+            while (second.isAlive()||!secondQueue.isEmpty()) {
                 try {
-                    secondQueue.add(firstQueue.remove());
+                    result.add(secondQueue.remove());
                     Thread.sleep(6);
                 } catch (NoSuchElementException e) {
                 } catch (InterruptedException e) {
@@ -86,13 +89,14 @@ public class Competition {
             synchronized (competition) {
                 competition.first.start();
                 competition.second.start();
+                competition.third.start();
             }
             competition.first.join();
             competition.second.join();
-            if(statistics.containsKey(competition.secondQueue.size())){
-                statistics.put(competition.secondQueue.size(),statistics.get(competition.secondQueue.size())+1);
+            if(statistics.containsKey(competition.result.size())){
+                statistics.put(competition.result.size(),statistics.get(competition.result.size())+1);
             }else{
-                statistics.put(competition.secondQueue.size(),1);
+                statistics.put(competition.result.size(),1);
             }
         }
         Set<Integer> keys = statistics.keySet();
