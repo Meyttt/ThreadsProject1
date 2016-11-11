@@ -12,16 +12,10 @@ import java.util.*;
 public class Competition {
     private Queue<String> firstQueue;
     private Queue<String> secondQueue;
-    private Thread first;
-    private Thread second;
-    private Thread third;
     private ArrayList<String> result;
     Competition() throws FileNotFoundException{
         firstQueue= EvictingQueue.create(5);
         secondQueue= EvictingQueue.create(5);
-        first = new Thread(new WritingFromFile());
-        second = new Thread(new FirstToSecond());
-        third = new Thread(new SecondToThird());
         result = new ArrayList<String>();
 
     }
@@ -36,7 +30,7 @@ public class Competition {
             while (true){
                 try {
                     firstQueue.add(bufferedReader.readLine());
-                    Thread.sleep(5);
+                    Thread.sleep(0,100);
                 }catch (NullPointerException e){
                     break;
                 } catch (IOException e) {
@@ -47,7 +41,7 @@ public class Competition {
 
             }
 
-            System.out.println("Reading was ended");
+//            System.out.println("Reading was ended");
         }
     }
     public FirstToSecond getF2S(){
@@ -65,35 +59,33 @@ public class Competition {
                 e.printStackTrace();
             }
             thread1.start();
-            while(thread1.isAlive())
-            try {
-                    Thread.sleep(10);
-            } catch (InterruptedException e) {
+            thread1.setPriority(1);
+            while(thread1.isAlive()) {
+                try {
+                    secondQueue.add(firstQueue.remove());
+                    Thread.sleep(0,200);
+                } catch (NoSuchElementException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
             }
-            try {
-              secondQueue.add(firstQueue.remove());
-                Thread.sleep(2);
-            } catch (NoSuchElementException e) {
-            } catch (InterruptedException e) {
-                    e.printStackTrace();
-            }
-
 
         }
     }
     public SecondToThird getS2T(){
         return new SecondToThird();
     }
-    public class SecondToThird implements Runnable{
+    public class SecondToThird extends Thread{
         public void run() {
 //
             Thread thread2= new Thread(getF2S());
             thread2.start();
+            thread2.setPriority(3);
+            this.setPriority(5);
             while(thread2.isAlive()) {
                 try {
                     result.add(secondQueue.remove());
-                    Thread.sleep(6);
+                    Thread.sleep(0,100);
                 } catch (NoSuchElementException e) {
                 } catch (InterruptedException e) {
 
@@ -112,19 +104,15 @@ public class Competition {
 
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         HashMap<Integer, Integer> statistics = new HashMap<Integer, Integer>();
-        for(int i=0; i<100;i++) {
+        for(int i=0; i<10;i++) {
             Competition competition = new Competition();
             synchronized (competition) {
-                Thread thread1 = new Thread(competition.getWriting());
-                Thread thread2 = new Thread(competition.getF2S());
                 Thread thread3 = new Thread(competition.getS2T());
                 thread3.start();
-                thread2.start();
-                thread1.start();
+                thread3.join();
 
             }
-            competition.first.join();
-            competition.second.join();
+
             if(statistics.containsKey(competition.result.size())){
                 statistics.put(competition.result.size(),statistics.get(competition.result.size())+1);
             }else{
